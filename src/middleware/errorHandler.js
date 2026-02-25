@@ -2,6 +2,10 @@ function errorHandler(err, req, res, next) {
     console.error(`[${new Date().toISOString()}] Error:`, err.message);
     console.error('Stack:', err.stack);
 
+    if (err.message.includes('Cuerpo de solicitud vacío') || err.message.includes('Unexpected end of JSON input')) {
+        return res.status(400).json({ error: 'Cuerpo de solicitud vacío o inválido' });
+    }
+
     if (err.type === 'validation') {
         return res.status(400).json({ error: err.message });
     }
