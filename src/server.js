@@ -1,13 +1,7 @@
-const express = require ('express');
-const app = express();
-const port = 3000;
+const app = require('./app');
 
-app.use(express.json());
+const PORT = process.env.PORT || 3000;
 
-//ruta de prueba
-app.get('/', (req, res) => {
-    res.send('Hola Mundo!');
-});
-app.listen(port, () => {
-    console.log(`Servidor escuchando en http://localhost:${port}`);
+app.listen(PORT, () => {
+    console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
