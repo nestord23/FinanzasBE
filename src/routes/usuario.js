@@ -2,12 +2,14 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../config/supabase');
 const authenticate = require('../middleware/auth');
+const { enviarMensajeAUsuario } = require('../sse');
 
 router.get('/mis-ordenes', authenticate, async (req, res) => {
     try {
         const userId = req.user.id;
-        
-        const { data, error } = await supabase
+        const limit = parseInt(req.query.limit) || null;
+
+        let query = supabase
             .from('ordenes')
             .select(`
                 *,
@@ -15,6 +17,12 @@ router.get('/mis-ordenes', authenticate, async (req, res) => {
             `)
             .eq('user_id', userId)
             .order('created_at', { ascending: false });
+
+        if (limit && limit > 0) {
+            query = query.limit(limit);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
 
@@ -178,6 +186,11 @@ router.post('/ordenes', authenticate, async (req, res) => {
             .single();
 
         if (errorOrden) throw errorOrden;
+
+        enviarMensajeAUsuario(userId, {
+            type: 'orden_creada',
+            data: orden
+        });
 
         res.status(201).json(orden);
     } catch (error) {

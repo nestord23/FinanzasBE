@@ -8,6 +8,13 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SECRET_KEY
 );
 
+const COOKIE_OPTIONS = {
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 24 * 60 * 60 * 1000,
+};
+
 router.post('/auth/registro', async (req, res) => {
     try {
         const { email, password, nombre } = req.body;
@@ -49,14 +56,20 @@ router.post('/auth/login', async (req, res) => {
 
         if (error) throw error;
 
+        res.cookie('token', data.session.access_token, COOKIE_OPTIONS);
+
         res.json({
             message: 'Login exitoso',
             user: data.user,
-            session: data.session
         });
     } catch (error) {
         res.status(401).json({ error: error.message });
     }
+});
+
+router.post('/auth/logout', (req, res) => {
+    res.clearCookie('token', { path: '/' });
+    res.json({ message: 'Sesión cerrada exitosamente' });
 });
 
 module.exports = router;

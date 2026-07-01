@@ -1,14 +1,11 @@
 const app = require('./app');
-const http = require('http');
-const { setupWebSocket } = require('./websocket');
+const { setupSSE } = require('./sse');
 
 const PORT = process.env.PORT || 3000;
 
-const server = http.createServer(app);
+setupSSE(app);
 
-setupWebSocket(server);
-
-server.listen(PORT, () => {
+app.listen(PORT, () => {
     console.log(`Servidor escuchando en http://localhost:${PORT}`);
-    console.log(`WebSocket disponible en ws://localhost:${PORT}`);
+    console.log(`SSE disponible en http://localhost:${PORT}/api/eventos`);
 });

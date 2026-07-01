@@ -100,3 +100,16 @@ INSERT INTO acciones (simbolo, nombre, precio_actual) VALUES
     ('TSLA', 'Tesla Inc.', 248.50),
     ('AMZN', 'Amazon.com Inc.', 178.35)
 ON CONFLICT (simbolo) DO NOTHING;
+
+-- Función RPC para actualizar precios en batch (atómico)
+CREATE OR REPLACE FUNCTION actualizar_precios(data_json JSONB)
+RETURNS SETOF acciones AS $$
+UPDATE acciones a
+SET
+    precio_anterior = a.precio_actual,
+    precio_actual = (item->>'nuevo_precio')::DECIMAL(10, 2),
+    ultima_actualizacion = NOW()
+FROM jsonb_array_elements(data_json) AS item
+WHERE a.id = (item->>'id')::INT
+RETURNING a.*;
+$$ LANGUAGE sql SECURITY DEFINER;
